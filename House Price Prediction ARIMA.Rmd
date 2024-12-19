@@ -1,0 +1,87 @@
+---
+title: "Case shiller test"
+output: html_document
+date: "2024-10-28"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+require(forecast)
+require(tseries)
+require(tidyverse)
+```
+```{r}
+# set wd
+setwd("/cloud/project")
+
+```
+```{r}
+CaseShiller <- read.csv("SPCS20RPSNSA.csv")
+```
+
+
+```{r}
+head(CaseShiller)
+
+```
+```{r}
+names(CaseShiller)[2] <- "Units"
+CSUnits <- CaseShiller$Units
+tCaseShiller <- ts(CSUnits,start = c(2000,1),frequency =12)
+```
+
+
+```{r}
+tCaseShiller
+```
+```{r}
+fit <- auto.arima(tCaseShiller)
+fit
+
+```
+```{r}
+accuracy(fit)
+```
+```{r}
+plot(forecast(fit,12),xlab = "Date" , ylab = "Units" , main = "Arima forecast for Case-Shiller Index")
+```
+```{r}
+pred_values <- forecast(fit,12)
+pred_values
+```
+```{r}
+qqnorm(fit$residuals)
+qqline(fit$residuals)
+Box.test(fit$residuals,type = "Ljung-Box")
+```
+```{r}
+ltCaseShiller <- log(tCaseShiller)
+head(ltCaseShiller)
+```
+```{r}
+fit2 <- stl(ltCaseShiller , s.window = "period")
+plot(fit2,main = "Seasonal Decomposition of log(Case-Shiller Units")
+```
+```{r}
+ggseasonplot(tCaseShiller,year.labels = TRUE , col =rainbow(20))
+```
+```{r}
+fit3 <- auto.arima(ltCaseShiller)
+fit3
+```
+```{r}
+fitAccuracy <- data.frame(accuracy(fit))
+fitAccuracy2 <-data.frame(accuracy(fit3))
+fitAccuracyFinal <- rbind(fitAccuracy,fitAccuracy2)
+fitAccuracyFinal
+```
+```{r}
+plot(forecast(fit3,12),xlab="Date",ylab="Units",main="Arima Forecast for Case-Shiller Index")
+```
+```{r}
+
+```
+
